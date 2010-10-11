@@ -10,14 +10,26 @@ role Bar {
   }
 }
 
-class Foo with Bar {
+role Baz {
+    after [qw/do_foo do_boo/] {
+        push @log, { after => 'string' };
+    }
+}
+
+class Foo with (Bar, Baz) {
   method do_foo {
     push @log, { class => 'string' };
   }
+
+  method do_boo {
+    push @log, { also_class => 'another string' };
+  }
 }
 
-Foo->new->do_foo;
+my $foo = Foo->new();
+$foo->do_foo;
+$foo->do_boo;
 
-is_deeply(\@log, [{'before', 'string'}, {'class','string'}] );
+is_deeply(\@log, [{'before', 'string'}, {'class','string'}, {'after', 'string'}, {'also_class', 'another string'}, {'after', 'string'}] );
 
 done_testing;
